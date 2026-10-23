@@ -63,7 +63,6 @@ open correctly on phones.
    - `MONGO_URI`: the Atlas connection string.
    - `SMTP_USERNAME`, `SMTP_PASSWORD`, and `SMTP_FROM_EMAIL`: Gmail account
      and App Password values for verification email.
-   - `BACKEND_PUBLIC_URL`: `https://YOUR_RENDER_SERVICE.onrender.com`.
    - `FRONTEND_URL` and `CORS_ORIGINS`: `https://YOUR_GITHUB_USERNAME.github.io`
      (no repository path).
    - `PUBLIC_FRONTEND_URL`: `https://YOUR_GITHUB_USERNAME.github.io/REPOSITORY_NAME`
@@ -78,6 +77,10 @@ open correctly on phones.
 6. Register using the public site URL and open the email on a phone. The link
    opens the public Render API, which redirects to the Pages verification
    screen; select **Verify Email** to activate the account.
+
+Render sets `RENDER_EXTERNAL_URL` for the web service automatically; the API
+uses it as the verification-email link host unless `BACKEND_PUBLIC_URL` is
+explicitly configured.
 
 Render's free service may sleep when idle, so the first API request or email
 send after inactivity can take longer. Keep MongoDB and SMTP credentials only

@@ -16,8 +16,6 @@ services:
         value: cyberguard_live
       - key: JWT_SECRET
         generateValue: true
-      - key: BACKEND_PUBLIC_URL
-        sync: false
       - key: FRONTEND_URL
         sync: false
       - key: PUBLIC_FRONTEND_URL
