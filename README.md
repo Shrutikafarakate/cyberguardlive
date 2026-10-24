@@ -63,10 +63,10 @@ open correctly on phones.
    - `MONGO_URI`: the Atlas connection string.
    - `SMTP_USERNAME`, `SMTP_PASSWORD`, and `SMTP_FROM_EMAIL`: Gmail account
      and App Password values for verification email.
-   - `FRONTEND_URL` and `CORS_ORIGINS`: `https://YOUR_GITHUB_USERNAME.github.io`
-     (no repository path).
-   - `PUBLIC_FRONTEND_URL`: `https://YOUR_GITHUB_USERNAME.github.io/REPOSITORY_NAME`
-     (include the repository path).
+   The blueprint configures `FRONTEND_URL`, `CORS_ORIGINS`, and
+   `PUBLIC_FRONTEND_URL` for this repository's GitHub Pages site. If the
+   Render service already exists, sync the Blueprint so these values are
+   applied to it.
 4. Wait for the Render service to deploy and verify
    `https://YOUR_RENDER_SERVICE.onrender.com/health` returns `{"status":"ok"}`.
 5. In the GitHub repository, add the Actions variable
@@ -74,9 +74,11 @@ open correctly on phones.
    Under **Settings → Pages**, set the build and deployment source to
    **GitHub Actions**. The workflow deploys the frontend on the next push to
    `main` or `master` (or when manually run from **Actions**).
-6. Register using the public site URL and open the email on a phone. The link
-   opens the public Render API, which redirects to the Pages verification
-   screen; select **Verify Email** to activate the account.
+6. Register using the public site URL and open the verification email on any
+   device with internet access. Its public Render link redirects to the
+   GitHub Pages verification screen; select **Verify Email** to activate the
+   account. This requires the Render API to be reachable; the free service may
+   take time to wake after inactivity.
 
 Render sets `RENDER_EXTERNAL_URL` for the web service automatically; the API
 uses it as the verification-email link host unless `BACKEND_PUBLIC_URL` is
@@ -85,6 +87,29 @@ explicitly configured.
 Render's free service may sleep when idle, so the first API request or email
 send after inactivity can take longer. Keep MongoDB and SMTP credentials only
 in Render's environment settings, never in GitHub variables or source files.
+
+### Backend outage email alerts
+
+The app emails account owners when a monitored API goes offline while the
+backend is running. To also detect when the CyberGuard backend itself is
+unavailable, `.github/workflows/monitor-backend.yml` checks its health endpoint
+on a five-minute schedule and sends email only when an outage starts or the
+backend recovers. GitHub scheduled workflows are best-effort and may be
+delayed; they are not a real-time or guaranteed monitoring service.
+
+In **Settings → Secrets and variables → Actions**, configure these secrets:
+
+- `ALERT_EMAIL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`,
+  `SMTP_PASSWORD`, and `SMTP_FROM_EMAIL`.
+- Optional secrets `SMTP_USE_TLS` and `SMTP_USE_SSL` (default `true` and
+  `false`, respectively).
+
+Use an SMTP App Password where required. The workflow opens one GitHub issue
+while the backend is down and closes it after recovery, so repeated checks do
+not send duplicate outage emails. In **Settings → Actions → General → Workflow
+permissions**, allow read and write permissions so the workflow can open and
+close the outage issue.
+The workflow checks `https://cyberguard-live-api.onrender.com/health`.
 
 ## Verify email locally on the same computer
 

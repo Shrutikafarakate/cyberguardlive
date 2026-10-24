@@ -1,0 +1,41 @@
+name: Monitor CyberGuard backend
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: backend-uptime-monitor
+  cancel-in-progress: false
+
+jobs:
+  check-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check backend and send transition alerts
+        run: python scripts/uptime_monitor.py
+        env:
+          BACKEND_HEALTH_URL: https://cyberguard-live-api.onrender.com/health
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS || 'true' }}
+          SMTP_USE_SSL: ${{ secrets.SMTP_USE_SSL || 'false' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
